@@ -78,6 +78,12 @@ USER root
 RUN mkdir -p "${CONTAINER_DIR}"
 WORKDIR "${CONTAINER_DIR}"
 
+# Copy repofile from builder
+COPY --from=builder "${CUDA_YUM_REPO_FILE_PATH}" "${CUDA_YUM_REPO_FILE_PATH}"
+
+# Copy the venv from the builder with the ilab cli and recompiled llama-cpp-python
+COPY --from=builder "${VENV_PATH}" "${VENV_PATH}"
+
 # Copy files
 COPY config.yaml .
 COPY entrypoint.sh .
@@ -88,15 +94,9 @@ RUN microdnf install -y \
     python3 \
     python3-pip
 
-# Copy repofile from builder
-COPY --from=builder "${CUDA_YUM_REPO_FILE_PATH}" "${CUDA_YUM_REPO_FILE_PATH}"
-
 # Install cuda runtime
 RUN microdnf install -y "cuda-runtime-${CUDA_VERSION}" && \
     microdnf clean all
-
-# Copy the venv from the builder with the ilab cli and recompiled llama-cpp-python
-COPY --from=builder "${VENV_PATH}" "${VENV_PATH}"
 
 # Set entrypoint
 ENTRYPOINT [ "sh" ]

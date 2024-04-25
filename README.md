@@ -2,7 +2,7 @@
 
 Prepare a container for running Instruct Lab with an NVIDIA GPU. This does *not* require the CUDA Toolkit installed on the host. This is useful because the CUDA toolkit is not super widely supported.
 
-The build is set up in a two stage process using a builder with the compile dependencies and the final images with just runtime dependencies.
+The build is set up in a two stage process using a builder with the compile dependencies and the final image with just runtime dependencies.
 
 The builer image is around 17GB, and the final image is around 9GB.
 
