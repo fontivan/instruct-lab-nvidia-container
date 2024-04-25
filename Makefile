@@ -3,6 +3,8 @@
 CONTAINER_BASE_IMAGE ?= docker.io/rockylinux/rockylinux:9-minimal
 CONTAINER_DIR ?= /work
 CONTAINER_NAME ?= instruct-lab-nvidia-container
+CUDA_MAJOR_VERSION ?= 12
+CUDA_MINOR_VERSION ?= 4
 HUGGINGFACE_CACHE_DIR ?= ${HOME}/.cache/huggingface
 LAB_LISTEN_IF ?= 0.0.0.0
 NVIDIA_DEVICE ?= nvidia.com/gpu=all
@@ -20,6 +22,8 @@ build-container:
 	--tag $(CONTAINER_NAME) \
 	--build-arg CONTAINER_BASE_IMAGE="$(CONTAINER_BASE_IMAGE)" \
 	--build-arg CONTAINER_DIR="$(CONTAINER_DIR)" \
+	--build-arg CUDA_MAJOR_VERSION="$(CUDA_MAJOR_VERSION)" \
+	--build-arg CUDA_MINOR_VERSION="$(CUDA_MINOR_VERSION)" \
 	.
 
 # Deploy the freshly built container using podman
