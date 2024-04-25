@@ -2,7 +2,9 @@
 
 Prepare a container for running Instruct Lab with an NVIDIA GPU. This does *not* require the CUDA Toolkit installed on the host. This is useful because the CUDA toolkit is not super widely supported.
 
-Note that this is a *hefty* container. The final image clocks in around 17 GB.
+The build is set up in a two stage process using a builder with the compile dependencies and the final images with just runtime dependencies.
+
+The builer image is around 17GB, and the final image is around 9GB.
 
 ## Host Installation
 
@@ -20,6 +22,9 @@ Note that this is a *hefty* container. The final image clocks in around 17 GB.
     - (Optional) CONTAINER_NAME: The name used for the container tag and deployed container name. The default is `instruct-lab-nvidia-container`.
     - (Optional) NVIDIA_DEVICE: The nvidia devices passed to the container. The default is `nvidia.com/gpu-all`. Specific identifies can be found in the output of `nvidia-ctk cdi list`.
     - (Optional) CONTAINER_DIR: The directory used inside the container. The default is `/work`.
+    - (Optional) CUDA_MAJOR_VERSION: Default 12
+    - (Optional) CUDA_MINOR_VERSION: Default 4
+    - (Optional) HUGGINGFACE_CACHE_DIR: The directory that is used to cache model downloads. The default is "${HOME}/.cache/huggingface".
 
 2. Run the build:
 ```
