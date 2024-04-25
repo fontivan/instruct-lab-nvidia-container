@@ -10,14 +10,6 @@ LAB_LISTEN_PORT := 8000
 # By default listen on all interfaces
 LAB_LISTEN_IF := 0.0.0.0
 
-# These are required in the shell environment
-ifndef INSTRUCT_LAB_TAXONOMY_PATH
-$(error INSTRUCT_LAB_TAXONOMY_PATH not set)
-endif
-ifndef INSTRUCT_LAB_MODELS_PATH
-$(error INSTRUCT_LAB_MODELS_PATH not set)
-endif
-
 # By default we will clean any existing container, build a new container, and deploy it
 all: clean-container build-container deploy-container
 
@@ -32,6 +24,8 @@ build-container:
 # Deploy the freshly built container using podman
 .PHONY: deploy-container
 deploy-container:
+	test -n "${INSTRUCT_LAB_TAXONOMY_PATH}"
+	test -n "${INSTRUCT_LAB_MODELS_PATH}"
 	podman run \
 		-it \
 		-d \
