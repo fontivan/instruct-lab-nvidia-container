@@ -1,5 +1,6 @@
-# It should be possible to build this on ubi but it will require an active subscription due to the external dependencies for CUDA
-FROM docker.io/rockylinux/rockylinux:9
+# It should be possible to build this on RHEL but it will require an active subscription due to the external dependencies for CUDA
+ARG CONTAINER_BASE_IMAGE=docker.io/rockylinux/rockylinux:9-minimal
+FROM ${CONTAINER_BASE_IMAGE}
 
 # Can override via argument if desired
 ARG CONTAINER_DIR=/work
@@ -14,12 +15,19 @@ COPY config.yaml .
 COPY entrypoint.sh .
 
 # Install pre-reqs
-RUN dnf groupinstall -y 'Development Tools'
+RUN microdnf install -y \
+    cmake \
+    curl \
+    gcc \
+    git \
+    make \
+    python3 \
+    python3-pip
 
 # Install cuda
-RUN dnf config-manager --add-repo https://developer.download.nvidia.com/compute/cuda/repos/rhel9/x86_64/cuda-rhel9.repo  && \
-    dnf install -y cuda-toolkit-12-4 && \
-    dnf clean all
+RUN curl -o /etc/yum.repos.d/cuda-rhel9.repo https://developer.download.nvidia.com/compute/cuda/repos/rhel9/x86_64/cuda-rhel9.repo  && \
+    microdnf install -y cuda-toolkit-12-4 && \
+    microdnf clean all
 
 # Prepare the venv and ilab cli
 RUN python3 -m venv venv-container && \

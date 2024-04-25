@@ -1,14 +1,13 @@
 
 # These can be overwritten by shell environment
+CONTAINER_BASE_IMAGE ?= docker.io/rockylinux/rockylinux:9-minimal
 CONTAINER_DIR ?= /work
 CONTAINER_NAME ?= instruct-lab-nvidia-container
+LAB_LISTEN_IF ?= 0.0.0.0
 NVIDIA_DEVICE ?= nvidia.com/gpu=all
 
 # If you want to change the port you need to change it in config.yaml too
 LAB_LISTEN_PORT := 8000
-
-# By default listen on all interfaces
-LAB_LISTEN_IF := 0.0.0.0
 
 # By default we will clean any existing container, build a new container, and deploy it
 all: clean-container build-container deploy-container
@@ -18,6 +17,7 @@ all: clean-container build-container deploy-container
 build-container:
 	podman build \
 	--tag $(CONTAINER_NAME) \
+	--build-arg CONTAINER_BASE_IMAGE="$(CONTAINER_BASE_IMAGE)" \
 	--build-arg CONTAINER_DIR="$(CONTAINER_DIR)" \
 	.
 
