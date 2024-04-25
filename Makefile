@@ -3,6 +3,7 @@
 CONTAINER_BASE_IMAGE ?= docker.io/rockylinux/rockylinux:9-minimal
 CONTAINER_DIR ?= /work
 CONTAINER_NAME ?= instruct-lab-nvidia-container
+HUGGINGFACE_CACHE_DIR ?= ${HOME}/.cache/huggingface
 LAB_LISTEN_IF ?= 0.0.0.0
 NVIDIA_DEVICE ?= nvidia.com/gpu=all
 
@@ -24,7 +25,9 @@ build-container:
 # Deploy the freshly built container using podman
 .PHONY: deploy-container
 deploy-container:
+	@echo "Checking if INSTRUCT_LAB_TAXONOMY_PATH is defined in environment"
 	test -n "${INSTRUCT_LAB_TAXONOMY_PATH}"
+	@echo "Checking if INSTRUCT_LAB_MODELS_PATH is defined in environment"
 	test -n "${INSTRUCT_LAB_MODELS_PATH}"
 	podman run \
 		-it \
@@ -34,6 +37,7 @@ deploy-container:
 		-p "${LAB_LISTEN_IF}:${LAB_LISTEN_PORT}:${LAB_LISTEN_PORT}" \
 		--volume "${INSTRUCT_LAB_TAXONOMY_PATH}:$(CONTAINER_DIR)/taxonomy:rw,Z" \
 		--volume "${INSTRUCT_LAB_MODELS_PATH}:$(CONTAINER_DIR)/models:rw,Z" \
+		--volume "${HUGGINGFACE_CACHE_DIR}:/.cache/huggingface:rw,Z" \
 		--device $(NVIDIA_DEVICE) \
 		--security-opt=label=disable \
 		localhost/$(CONTAINER_NAME):latest \
