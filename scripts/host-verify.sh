@@ -1,11 +1,13 @@
 #!/usr/bin/env bash
 
+CONTAINER_BACKEND="${CONTAINER_BACKEND:-podman}"
+
 if [[ $(nvidia-ctk cdi list | wc -l) -eq 0 ]]; then
     echo "Unable to detect NVIDIA gpu"
     exit 1
 fi
 
-result=$(podman run \
+result=$(${CONTAINER_BACKEND} run \
         --rm --device nvidia.com/gpu=all \
         --security-opt=label=disable \
         registry.access.redhat.com/ubi9/python-311 \

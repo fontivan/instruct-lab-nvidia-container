@@ -17,14 +17,16 @@ The builer image is around 17GB, and the final image is around 9GB.
 ## Container Build
 
 1. Prepare your environment with arguments for the container build:
+
     - (Required) INSTRUCT_LAB_TAXONOMY_PATH: The path to the git repo for taxonomy.
-    - (Required) INSTRUCT_LAB_MODELS_PATH: The path to the download folder for models.
+    - (Optional) CONTAINER_BACKEND: The container backend to use. The default is `podman`.
     - (Optional) CONTAINER_NAME: The name used for the container tag and deployed container name. The default is `instruct-lab-nvidia-container`.
-    - (Optional) NVIDIA_DEVICE: The nvidia devices passed to the container. The default is `nvidia.com/gpu-all`. Specific identifies can be found in the output of `nvidia-ctk cdi list`.
+    - (Optional) NVIDIA_DEVICE: The nvidia devices passed to the container. The default is `nvidia.com/gpu-all`. Specific identifiers can be found in the output of `nvidia-ctk cdi list`.
+    - (Optional) CONTAINER_BASE_IMAGE: The base image to use for the container build. The default is `docker.io/rockylinux/rockylinux:9-minimal`.
     - (Optional) CONTAINER_DIR: The directory used inside the container. The default is `/work`.
-    - (Optional) CUDA_MAJOR_VERSION: Default 12
-    - (Optional) CUDA_MINOR_VERSION: Default 4
-    - (Optional) HUGGINGFACE_CACHE_DIR: The directory that is used to cache model downloads. The default is "${HOME}/.cache/huggingface".
+    - (Optional) CUDA_MAJOR_VERSION: The major version of CUDA. Default is `12`.
+    - (Optional) CUDA_MINOR_VERSION: The minor version of CUDA. Default is `4`.
+    - (Optional) HUGGINGFACE_CACHE_DIR: The directory that is used to cache model downloads. The default is `${HOME}/.cache/huggingface`.
 
 2. Run the build:
 ```

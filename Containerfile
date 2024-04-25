@@ -1,25 +1,28 @@
-# It should be possible to run this on RHEL but it will require an active subscription due to the external dependencies for CUDA
-ARG CONTAINER_BASE_IMAGE=docker.io/rockylinux/rockylinux:9-minimal
+# It should be possible to run this on RHEL or UBI base images.
+# It will require an active subscription due to the external dependencies for CUDA.
+ARG CONTAINER_BASE_IMAGE="docker.io/rockylinux/rockylinux:9-minimal"
 
 # Can override via argument if desired
-ARG CONTAINER_DIR=/work
-ARG CUDA_MAJOR_VERSION=12
-ARG CUDA_MINOR_VERSION=4
-ARG CUDA_VERSION=${CUDA_MAJOR_VERSION}-${CUDA_MINOR_VERSION}
+ARG CONTAINER_DIR="/work"
+ARG CUDA_MAJOR_VERSION="12"
+ARG CUDA_MINOR_VERSION="4"
+ARG CUDA_VERSION="${CUDA_MAJOR_VERSION}-${CUDA_MINOR_VERSION}"
+ARG CUDA_YUM_REPO_FILE_PATH="/etc/yum.repos.d/cuda-rhel9.repo"
 
 # Venv variables
-ARG VENV_NAME=venv-container
-ARG VENV_PATH=${CONTAINER_DIR}/${VENV_NAME}
-ARG VENV_ACTIVATE_PATH=${VENV_PATH}/bin/activate
+ARG VENV_NAME="venv-container"
+ARG VENV_PATH="${CONTAINER_DIR}/${VENV_NAME}"
+ARG VENV_ACTIVATE_PATH="${VENV_PATH}/bin/activate"
 
 # Use a builder to prepare the venv since the compile dependencies for cuda are large
-FROM ${CONTAINER_BASE_IMAGE} as builder
+FROM "${CONTAINER_BASE_IMAGE}" as builder
 
 # Redefine args to inheirit defaults from above
 ARG CONTAINER_DIR
 ARG CUDA_MAJOR_VERSION
 ARG CUDA_MINOR_VERSION
 ARG CUDA_VERSION
+ARG CUDA_YUM_REPO_FILE_PATH
 ARG VENV_NAME
 ARG VENV_PATH
 ARG VENV_ACTIVATE_PATH
@@ -40,28 +43,32 @@ RUN microdnf install -y \
     python3-pip
 
 # Install cuda toolkit
-RUN curl -o /etc/yum.repos.d/cuda-rhel9.repo https://developer.download.nvidia.com/compute/cuda/repos/rhel9/x86_64/cuda-rhel9.repo  && \
+RUN curl -o "${CUDA_YUM_REPO_FILE_PATH}" "https://developer.download.nvidia.com/compute/cuda/repos/rhel9/x86_64/cuda-rhel9.repo"  && \
     microdnf install -y "cuda-toolkit-${CUDA_VERSION}" && \
     microdnf clean all
 
 # Prepare the venv and ilab cli
-RUN python3 -m venv ${VENV_NAME} && \
+RUN python3 -m venv "${VENV_NAME}" && \
     source "${VENV_ACTIVATE_PATH}" && \
     pip3 install --upgrade pip && \
-    pip3 install git+https://github.com/instructlab/instructlab.git@stable
+    pip3 install "git+https://github.com/instructlab/instructlab.git@stable"
 
 # Recompile llama with cuda support
 RUN source "${VENV_ACTIVATE_PATH}" && \
-    CUDACXX="/usr/local/cuda-${CUDA_MAJOR_VERSION}/bin/nvcc" CMAKE_ARGS="-DLLAMA_CUBLAS=on -DCMAKE_CUDA_ARCHITECTURES=all-major" FORCE_CMAKE=1 pip install llama-cpp-python --no-cache-dir --force-reinstall --upgrade
+    CUDACXX="/usr/local/cuda-${CUDA_MAJOR_VERSION}/bin/nvcc" \
+    CMAKE_ARGS="-DLLAMA_CUBLAS=on -DCMAKE_CUDA_ARCHITECTURES=all-major" \
+    FORCE_CMAKE=1 \
+    pip install llama-cpp-python --no-cache-dir --force-reinstall --upgrade
 
-# Restart to finish the regular container without build dependencies
-FROM ${CONTAINER_BASE_IMAGE} 
+# Restart to finish the final container without compile dependencies
+FROM "${CONTAINER_BASE_IMAGE}"
 
 # Redefine args to inheirit defaults from above
 ARG CONTAINER_DIR
 ARG CUDA_MAJOR_VERSION
 ARG CUDA_MINOR_VERSION
 ARG CUDA_VERSION
+ARG CUDA_YUM_REPO_FILE_PATH
 ARG VENV_NAME
 ARG VENV_PATH
 ARG VENV_ACTIVATE_PATH
@@ -81,9 +88,11 @@ RUN microdnf install -y \
     python3 \
     python3-pip
 
+# Copy repofile from builder
+COPY --from=builder "${CUDA_YUM_REPO_FILE_PATH}" "${CUDA_YUM_REPO_FILE_PATH}"
+
 # Install cuda runtime
-RUN curl -o /etc/yum.repos.d/cuda-rhel9.repo https://developer.download.nvidia.com/compute/cuda/repos/rhel9/x86_64/cuda-rhel9.repo  && \
-    microdnf install -y "cuda-runtime-${CUDA_VERSION}" && \
+RUN microdnf install -y "cuda-runtime-${CUDA_VERSION}" && \
     microdnf clean all
 
 # Copy the venv from the builder with the ilab cli and recompiled llama-cpp-python
