@@ -1,3 +1,14 @@
+# Makefile derived from https://web.archive.org/web/20240205205603/https://venthur.de/2021-03-31-python-makefiles.html
+
+# Get the directory this Makefile is sitting in
+ROOT_DIR := $(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
+
+# system python interpreter. used only to create virtual environment
+PY = python3
+VENV = venv
+BIN=$(ROOT_DIR)/$(VENV)/bin
+
+SHELL_FILES := $(shell find $(ROOT_DIR)  -type f -name "*.sh" | grep -v $(VENV))
 
 # These can be overwritten by shell environment
 CONTAINER_BACKEND ?= podman
@@ -14,7 +25,28 @@ NVIDIA_DEVICE ?= nvidia.com/gpu=all
 LAB_LISTEN_PORT := 8000
 
 # By default we will clean any existing container, build a new container, and deploy it
-all: clean-container build-container deploy-container
+all: bashate shellcheck yamllint
+
+# Container target
+container: clean-container build-container deploy-container
+
+# venv used for ci purposes
+$(VENV): requirements/ci.txt
+	$(PY) -m venv $(VENV)
+	$(BIN)/pip install --upgrade -r requirements/ci.txt
+	touch $(VENV)
+
+.PHONY: bashate
+bashate: $(VENV)
+	$(BIN)/bashate $(SHELL_FILES)
+
+.PHONY: shellcheck
+shellcheck: $(VENV)
+	$(BIN)/shellcheck -x $(SHELL_FILES)
+
+.PHONY: yamllint
+yamllint: $(VENV)
+	$(BIN)/yamllint .
 
 # Build the container using podman
 .PHONY: build-container
@@ -54,3 +86,9 @@ clean-container:
 .PHONY: exec-container
 exec-container:
 	${CONTAINER_BACKEND} exec -it --user root $(CONTAINER_NAME) $(CONTAINER_DIR)/entrypoint.sh
+
+# Clean venv and related files
+clean:
+	rm -rf $(VENV)
+	find . -type f -name *.pyc -delete
+	find . -type d -name __pycache__ -delete
