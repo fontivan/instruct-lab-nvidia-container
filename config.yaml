@@ -1,3 +1,4 @@
+---
 chat:
   context: default
   greedy_mode: false

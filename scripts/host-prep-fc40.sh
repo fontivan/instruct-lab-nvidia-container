@@ -2,8 +2,11 @@
 
 set -eou pipefail
 
-curl -s -L https://nvidia.github.io/libnvidia-container/stable/rpm/nvidia-container-toolkit.repo | \
-  sudo tee /etc/yum.repos.d/nvidia-container-toolkit.repo
+URL="https://nvidia.github.io/libnvidia-container/\
+stable/rpm/nvidia-container-toolkit.repo"
+
+curl -s -L "${URL}" | \
+    sudo tee /etc/yum.repos.d/nvidia-container-toolkit.repo
 
 sudo yum-config-manager --enable nvidia-container-toolkit-experimental
 

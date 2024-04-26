@@ -12,7 +12,7 @@ result=$(${CONTAINER_BACKEND} run \
         --security-opt=label=disable \
         registry.access.redhat.com/ubi9/python-311 \
         nvidia-smi -L)
-if ! grep "NVIDIA" <<< $result; then
+if ! grep "NVIDIA" <<< "${result}"; then
     echo "NVIDIA gpu not detected in container"
     exit 1
 fi
