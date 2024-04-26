@@ -24,33 +24,37 @@ NVIDIA_DEVICE ?= nvidia.com/gpu=all
 # If you want to change the port you need to change it in config.yaml too
 LAB_LISTEN_PORT := 8000
 
-# By default we will clean any existing container, build a new container, and deploy it
+# By default we we just performs lints since building the image is resource intense
 all: bashate shellcheck yamllint
 
 # Container target
-container: clean-container build-container deploy-container
+# Clean any existing container, build a new image, and deploy a new container
+container: clean-container build-image deploy-container
 
-# venv used for ci purposes
+# venv is used for ci linting purposes
 $(VENV): requirements/ci.txt
 	$(PY) -m venv $(VENV)
 	$(BIN)/pip install --upgrade -r requirements/ci.txt
 	touch $(VENV)
 
+# Run bashate on all *.sh files in repo
 .PHONY: bashate
 bashate: $(VENV)
 	$(BIN)/bashate $(SHELL_FILES)
 
+# Run shellcheck on all *.sh files in repo
 .PHONY: shellcheck
 shellcheck: $(VENV)
 	$(BIN)/shellcheck -x $(SHELL_FILES)
 
+# Run yamllint on all *.yml/*.yaml files in repo
 .PHONY: yamllint
 yamllint: $(VENV)
 	$(BIN)/yamllint .
 
-# Build the container using podman
-.PHONY: build-container
-build-container:
+# Build the image using podman
+.PHONY: build-image
+build-image:
 	${CONTAINER_BACKEND} build \
 	--tag $(CONTAINER_NAME) \
 	--build-arg CONTAINER_BASE_IMAGE="$(CONTAINER_BASE_IMAGE)" \

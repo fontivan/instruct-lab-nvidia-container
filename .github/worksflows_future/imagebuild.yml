@@ -1,0 +1,26 @@
+---
+# It seems that the image is a bit too hefty for the github actions to build
+# May revisit in the future
+
+# name: Container Image CI
+
+# "on":
+#   push:
+#     branches: ["main"]
+#   pull_request:
+#     branches: ["main"]
+
+# jobs:
+#   build:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - name: Set up QEMU
+#         uses: docker/setup-qemu-action@v3
+#       - name: Set up Docker Buildx
+#         uses: docker/setup-buildx-action@v3
+#       - name: Build and push
+#         uses: docker/build-push-action@v5
+#         with:
+#           file: Containerfile
+#           push: false
+#           tags: instruct-lab-nvidia-container:latest
