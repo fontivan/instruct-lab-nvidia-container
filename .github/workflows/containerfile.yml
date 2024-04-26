@@ -16,7 +16,4 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Build the Container image
-        run: |
-            docker build .
-                --file Containerfile
-                --tag instruct-lab-nvidia-container:$(date +%s)
+        run: make build-container
