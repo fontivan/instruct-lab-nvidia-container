@@ -28,9 +28,9 @@ The builer image is around 17GB, and the final image is around 9GB.
     - (Optional) CUDA_MINOR_VERSION: The minor version of CUDA. Default is `4`.
     - (Optional) HUGGINGFACE_CACHE_DIR: The directory that is used to cache model downloads. The default is `${HOME}/.cache/huggingface`.
 
-2. Run the build:
+2. Run the container build:
 ```
-make all
+make container
 ```
 
 ## Container Installation
