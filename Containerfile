@@ -15,6 +15,7 @@ ARG VENV_PATH="${CONTAINER_DIR}/${VENV_NAME}"
 ARG VENV_ACTIVATE_PATH="${VENV_PATH}/bin/activate"
 
 # Use a builder to prepare the venv since the compile dependencies for cuda are large
+# hadolint ignore=DL3006
 FROM "${CONTAINER_BASE_IMAGE}" as builder
 
 # Redefine args to inheirit defaults from above
@@ -28,11 +29,13 @@ ARG VENV_PATH
 ARG VENV_ACTIVATE_PATH
 
 # Configure user and working directory
+# hadolint ignore=DL3002
 USER root
 RUN mkdir -p "${CONTAINER_DIR}"
 WORKDIR "${CONTAINER_DIR}"
 
 # Install pre-reqs
+# hadolint ignore=DL3041
 RUN microdnf install -y \
     cmake \
     curl \
@@ -40,7 +43,8 @@ RUN microdnf install -y \
     git \
     make \
     python3 \
-    python3-pip
+    python3-pip && \
+    microdnf clean all
 
 # Install cuda toolkit
 RUN curl -o "${CUDA_YUM_REPO_FILE_PATH}" "https://developer.download.nvidia.com/compute/cuda/repos/rhel9/x86_64/cuda-rhel9.repo"  && \
@@ -48,19 +52,21 @@ RUN curl -o "${CUDA_YUM_REPO_FILE_PATH}" "https://developer.download.nvidia.com/
     microdnf clean all
 
 # Prepare the venv and ilab cli
+# hadolint ignore=DL3013
 RUN python3 -m venv "${VENV_NAME}" && \
-    source "${VENV_ACTIVATE_PATH}" && \
-    pip3 install --upgrade pip && \
-    pip3 install "git+https://github.com/instructlab/instructlab.git@stable"
+    . "${VENV_ACTIVATE_PATH}" && \
+    pip3 --no-cache-dir install "git+https://github.com/instructlab/instructlab.git@stable"
 
 # Recompile llama with cuda support
-RUN source "${VENV_ACTIVATE_PATH}" && \
+# hadolint ignore=DL3013
+RUN . "${VENV_ACTIVATE_PATH}" && \
     CUDACXX="/usr/local/cuda-${CUDA_MAJOR_VERSION}/bin/nvcc" \
     CMAKE_ARGS="-DLLAMA_CUBLAS=on -DCMAKE_CUDA_ARCHITECTURES=all-major" \
     FORCE_CMAKE=1 \
     pip install llama-cpp-python --no-cache-dir --force-reinstall --upgrade
 
 # Restart to finish the final container without compile dependencies
+# hadolint ignore=DL3006
 FROM "${CONTAINER_BASE_IMAGE}"
 
 # Redefine args to inheirit defaults from above
@@ -74,6 +80,7 @@ ARG VENV_PATH
 ARG VENV_ACTIVATE_PATH
 
 # Configure user and working directory
+# hadolint ignore=DL3002
 USER root
 RUN mkdir -p "${CONTAINER_DIR}"
 WORKDIR "${CONTAINER_DIR}"
@@ -89,10 +96,12 @@ COPY config.yaml .
 COPY entrypoint.sh .
 
 # Install pre-reqs
+# hadolint ignore=DL3041
 RUN microdnf install -y \
     git \
     python3 \
-    python3-pip
+    python3-pip && \
+    microdnf clean all
 
 # Install cuda runtime
 RUN microdnf install -y "cuda-runtime-${CUDA_VERSION}" && \

@@ -25,7 +25,7 @@ NVIDIA_DEVICE ?= nvidia.com/gpu=all
 LAB_LISTEN_PORT := 8000
 
 # By default we we just performs lints since building the image is resource intense
-all: bashate shellcheck yamllint
+all: bashate shellcheck hadolint yamllint
 
 # Container target
 # Clean any existing container, build a new image, and deploy a new container
@@ -46,6 +46,11 @@ bashate: $(VENV)
 .PHONY: shellcheck
 shellcheck: $(VENV)
 	$(BIN)/shellcheck -x $(SHELL_FILES)
+
+# Run hadolint on the Containerfile
+.PHONY: hadolint
+hadolint: $(VENV)
+	$(BIN)/hadolint $(ROOT_DIR)/Containerfile
 
 # Run yamllint on all *.yml/*.yaml files in repo
 .PHONY: yamllint
