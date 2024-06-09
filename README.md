@@ -66,3 +66,17 @@ ilab chat
 ```
 nvidia-smi
 ```
+
+## libEGL_nvidia.so version error
+
+If you get an error like this trying to launch the container:
+```
+Error: crun: cannot stat `/lib64/libEGL_nvidia.so.550.54.14`: No such file or directory: OCI runtime attempted to invoke a command that was not found
+```
+
+Then you probably need to re-generate the CDI specification:
+```
+sudo nvidia-ctk cdi generate --output=/etc/cdi/nvidia.yaml
+```
+
+This is caused by updating the NVIDIA driver after installing / last generating the spec.
